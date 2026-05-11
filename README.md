@@ -158,4 +158,4 @@ To avoid charges after the project:
 
 **Charity W. Maina**  
 AWS Certified Solutions Architect – Associate | IT Engineer  
-[LinkedIn](https://www.linkedin.com/in/charity-wmaina) · [Live Site](https://d2monq1h13acmt.cloudfront.net)
+[LinkedIn](https://www.linkedin.com/in/charity-w-maina) · [Live Site](https://d2monq1h13acmt.cloudfront.net)
