@@ -3,7 +3,7 @@
 ![Architecture](architecture-diagram/architecture.png)
 
 ## 🌐 Live Site
-[https://d2monq1h13acmt.cloudfront.net](https://d2monq1h13acmt.cloudfront.net)
+[https://d2monq1h13acmt.cloudfront.net](https://d2pz21gco5wn80.cloudfront.net)
 
 ---
 
