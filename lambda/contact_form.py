@@ -1,10 +1,11 @@
 import json
 import boto3
+import os
 
 ses = boto3.client('ses', region_name='eu-west-1')
 
-SENDER_EMAIL = "charitywmk@gmail.com"
-RECIPIENT_EMAIL = "charitywmk@gmail.com"
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL')
+RECIPIENT_EMAIL = os.environ.get('RECIPIENT_EMAIL')
 
 def lambda_handler(event, context):
 
