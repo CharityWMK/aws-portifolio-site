@@ -13,16 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-- name: Inject environment variables
-  run: |
-    sed -i 's|%%API_BASE_URL%%|${{ secrets.API_BASE_URL }}|g' website/index.html
-
-- name: Deploy website files to S3
-  run: |
-    aws s3 sync website/ s3://${{ secrets.S3_BUCKET }}/ \
-      --delete \
-      --cache-control "max-age=86400"
-    
 
       # Step 1 - Check out the code
       - name: Checkout repository
@@ -36,28 +26,33 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 3 - Sync website folder to S3
+      # Step 3 - Inject secrets into index.html before uploading
+      - name: Inject environment variables
+        run: |
+          sed -i 's|%%API_BASE_URL%%|${{ secrets.API_BASE_URL }}|g' website/index.html
+
+      # Step 4 - Sync website folder to S3
       - name: Deploy website files to S3
         run: |
-          aws s3 sync website/ s3://${{ secrets.S3_BUCKET }} \
+          aws s3 sync website/ s3://${{ secrets.S3_BUCKET }}/ \
             --delete \
             --cache-control "max-age=86400" \
             --exclude "*.DS_Store"
 
-      # Step 4 - Invalidate CloudFront cache
+      # Step 5 - Invalidate CloudFront cache
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
 
-      # Step 5 - Send success email via SES
+      # Step 6 - Send success email via SES
       - name: Send deployment success email
         run: |
           aws ses send-email \
             --from ${{ secrets.NOTIFY_EMAIL }} \
             --destination "ToAddresses=${{ secrets.NOTIFY_EMAIL }}" \
-            --message "Subject={Data='Portfolio Deployed Successfully',Charset=utf8},Body={Text={Data='Your portfolio has been deployed to AWS. Commit: ${{ github.sha }} by ${{ github.actor }} at ${{ github.event.head_commit.timestamp }}. View site: https://d2monq1h13acmt.cloudfront.net',Charset=utf8}}" \
+            --message "Subject={Data=Portfolio Deployed Successfully,Charset=utf-8},Body={Text={Data=Deployed commit ${{ github.sha }} by ${{ github.actor }} at ${{ github.event.head_commit.timestamp }}. View site: ${{ secrets.CLOUDFRONT_URL }},Charset=utf-8}}" \
             --region ${{ secrets.AWS_REGION }}
 
   notify-failure:
@@ -79,5 +74,5 @@ jobs:
           aws ses send-email \
             --from ${{ secrets.NOTIFY_EMAIL }} \
             --destination "ToAddresses=${{ secrets.NOTIFY_EMAIL }}" \
-            --message "Subject={Data='Portfolio Deployment FAILED',Charset=utf8},Body={Text={Data='Deployment failed for commit ${{ github.sha }} by ${{ github.actor }}. Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}',Charset=utf8}}" \
+            --message "Subject={Data=Portfolio Deployment FAILED,Charset=utf-8},Body={Text={Data=Deployment failed for commit ${{ github.sha }} by ${{ github.actor }}. Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }},Charset=utf-8}}" \
             --region ${{ secrets.AWS_REGION }}
