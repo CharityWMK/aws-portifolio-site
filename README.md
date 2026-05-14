@@ -111,9 +111,15 @@ aws-portfolio-site/
 - Verify sender email identity in the same region as Lambda
 - Confirm verification via the link sent to the inbox
 
-### 7. Update and deploy
-- Re-upload `index.html` to S3
-- Invalidate the CloudFront cache: `/*`
+### 7. CI/CD Pipeline
+- Add GitHub Secrets: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET, CLOUDFRONT_DISTRIBUTION_ID, API_BASE_URL, CLOUDFRONT_URL, NOTIFY_EMAIL
+- Create IAM user github-actions-deployer with scoped S3, CloudFront, and SES permissions
+- Push deploy.yml to .github/workflows/ — pipeline runs on every push to main
+
+### 8. Monitoring
+- Create SNS topic portfolio-alerts in eu-west-1 → subscribe email → confirm
+- Create CloudWatch billing alarm (threshold: $5) in us-east-1
+- Create CloudWatch Lambda error alarm for both functions
 
 ---
 
@@ -129,19 +135,17 @@ Built entirely within the AWS Free Tier:
 | API Gateway | 1M HTTP API calls/month |
 | DynamoDB | 25 GB storage, 25 WCU/RCU (on-demand free tier) |
 | SES | 62,000 outbound emails/month (when sent from Lambda) |
+| CloudWatch |10 custom metrics, 10 alarms free |
+| SNS |1,000 email notifications/month free |
+| GitHub Actions |2,000 minutes/month free on public repos |
 
 ---
 
-## 🧹 Cleanup
-
-To avoid charges after the project:
-
-1. Disable and delete the CloudFront distribution
-2. Empty and delete the S3 bucket
-3. Delete both Lambda functions
-4. Delete the API Gateway
-5. Delete the DynamoDB table
-6. Remove the SES verified identity
+🔜 Planned Improvements
+- Route 53 + custom domain — replace the auto-generated CloudFront URL with a professional domain and ACM SSL certificate
+- Origin Access Control (OAC) — restrict S3 bucket access so only CloudFront can read files (security hardening)
+- Infrastructure as Code — recreate all resources using CloudFormation or Terraform for reproducible deployments
+- Full CloudWatch dashboard — unified view of Lambda invocations, API latency, and error rates
 
 ---
 
@@ -151,6 +155,7 @@ To avoid charges after the project:
 - SES and Lambda must be in the **same AWS region** for email delivery to work
 - CORS must be configured on API Gateway and headers must also be returned in Lambda responses
 - Auto-deploy on API Gateway stages means CORS changes take effect immediately without manual deployment
+- If CloudFront caches a wrong response (e.g. HTML served as CSS), the cache must be fully invalidated before the correct file is served — in severe cases, recreating the distribution is the cleanest fix
 
 ---
 
@@ -158,4 +163,4 @@ To avoid charges after the project:
 
 **Charity W. Maina**  
 AWS Certified Solutions Architect – Associate | IT Engineer  
-[LinkedIn](https://www.linkedin.com/in/charity-w-maina) · [Live Site](https://d2monq1h13acmt.cloudfront.net)
+[LinkedIn](https://www.linkedin.com/in/charity-w-maina) · [Live Site](https://d2pz21gco5wn80.cloudfront.net)
