@@ -13,6 +13,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+- name: Inject environment variables
+  run: |
+    sed -i 's|%%API_BASE_URL%%|${{ secrets.API_BASE_URL }}|g' website/index.html
+
+- name: Deploy website files to S3
+  run: |
+    aws s3 sync website/ s3://${{ secrets.S3_BUCKET }}/ \
+      --delete \
+      --cache-control "max-age=86400"
+    
 
       # Step 1 - Check out the code
       - name: Checkout repository
